@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#176b58"><title>HomeBills | החשבונות שלנו</title>
+<style>
+:root{--green:#176b58;--bg:#f3f7f5;--ink:#18332c;--muted:#71817b;--line:#e1eae5;--white:#fff;--red:#b84b45}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+header{background:var(--green);color:white;padding:24px max(18px,calc((100% - 1050px)/2))}header h1{margin:0;font-size:27px}header p{margin:5px 0 0;opacity:.86}
+main{max-width:1050px;margin:22px auto;padding:0 16px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:18px}
+button,select,input{font:inherit}button{border:0;border-radius:12px;padding:11px 16px;cursor:pointer;font-weight:650}.primary{background:var(--green);color:white}.soft{background:white;color:var(--green);border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.stat,.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:16px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:25px;margin-top:5px}
+.monthnav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 12px}.monthnav h2{margin:0;font-size:22px}.monthnav select{border:1px solid var(--line);background:white;border-radius:10px;padding:9px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.bill{background:white;border:1px solid var(--line);border-radius:16px;padding:15px}.billtop{display:flex;justify-content:space-between;gap:8px}.bill h3{margin:0 0 5px}.muted{color:var(--muted);font-size:14px}.amount{font-size:23px;font-weight:750;margin:12px 0}.tag{display:inline-block;border-radius:20px;padding:4px 10px;background:#e9f5ef;color:var(--green);font-size:13px}.tag.unpaid{background:#fff2df;color:#96601b}.tag.late{background:#fdebea;color:var(--red)}.actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.actions button{padding:8px 11px;font-size:13px}
+.empty{text-align:center;color:var(--muted);padding:35px 12px}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin:22px 0 10px}.sectionhead h2{margin:0}
+dialog{border:0;border-radius:20px;width:min(520px,calc(100% - 24px));padding:0;box-shadow:0 20px 70px #102b2233}dialog::backdrop{background:#102b2270}.modal{padding:22px}.modal h2{margin:0 0 16px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:14px;color:var(--muted)}.field input,.field select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:white}.modalfoot{display:flex;gap:9px;margin-top:18px;justify-content:flex-start}
+footer{text-align:center;color:var(--muted);font-size:12px;margin:26px 0}
+@media(max-width:650px){.stats{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.fields{grid-template-columns:1fr}.field.full{grid-column:auto}.monthnav{align-items:flex-start;flex-direction:column}}
+</style></head>
+<body>
+<header><h1>🏡 HomeBills</h1><p>החשבונות שלנו — פשוט לעקוב, חודש אחרי חודש</p></header>
+<main>
+<div class="toolbar"><div><strong>ניהול החשבונות הביתיים</strong><div class="muted">סינון לפי חודש או תקופת חיוב דו־חודשית</div></div><button class="primary" id="add">＋ הוספת חודש</button></div>
+<section class="stats"><div class="stat"><small>סה״כ לתקופה</small><strong id="total">₪0</strong></div><div class="stat"><small>שולם</small><strong id="paid">₪0</strong></div><div class="stat"><small>ממתין לתשלום</small><strong id="unpaid">₪0</strong></div></section>
+<div class="monthnav"><h2 id="periodTitle">חשבונות לתקופה</h2><div><select id="month"></select> <select id="year"></select></div></div>
+<div class="sectionhead"><h2>החשבונות בתקופה</h2><span class="muted" id="count"></span></div><section class="grid" id="bills"></section>
+<footer>גרסה אישית: הנתונים נשמרים בדפדפן במכשיר הזה בלבד. מומלץ לייצא גיבוי מדי פעם.</footer>
+</main>
+<dialog id="dlg"><form class="modal" id="form"><h2 id="formTitle">הוספת חודש</h2><input type="hidden" id="editId">
+<div class="fields">
+<div class="field"><label>חודש החיוב</label><select id="billMonth" required></select></div><div class="field"><label>שנת החיוב</label><select id="billYear"></select></div>
+<div class="field"><label>סוג תשלום</label><select id="kind"><option>חשמל</option><option>מים</option><option>ארנונה</option><option>גז</option><option>אינטרנט</option><option>ועד בית</option><option>אחר</option></select></div>
+<div class="field"><label>תקופת חיוב</label><select id="frequency"><option value="1">חודשי</option><option value="2">דו־חודשי</option></select></div>
+<div class="field full"><label>שם ספק</label><input id="provider" placeholder="לדוגמה: חברת החשמל"></div>
+<div class="field"><label>סכום (₪)</label><input id="amount" type="number" min="0" step="0.01" required placeholder="0"></div><div class="field"><label>תאריך תשלום / יעד</label><input id="due" type="date" required></div>
+<div class="field"><label>סטטוס</label><select id="status"><option value="unpaid">ממתין לתשלום</option><option value="paid">שולם</option></select></div><div class="field full"><label>הערות (לא חובה)</label><input id="notes" placeholder="הערות"></div>
+</div><div class="modalfoot"><button class="primary" type="submit">שמירה</button><button class="soft" type="button" id="cancel">ביטול</button></div></form></dialog>
+<script>
+const months=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const $=id=>document.getElementById(id);let bills=JSON.parse(localStorage.getItem('homebills-v1')||'[]');const now=new Date();
+function fill(el,items){el.innerHTML=items.map((x,i)=>'<option value="'+i+'">'+x+'</option>').join('')}
+fill($('month'),months);fill($('billMonth'),months);let years=Array.from({length:9},(_,i)=>now.getFullYear()-4+i);$('year').innerHTML=years.map(y=>'<option>'+y+'</option>').join('');$('billYear').innerHTML=$('year').innerHTML;$('month').value=now.getMonth();$('year').value=now.getFullYear();
+function money(n){return new Intl.NumberFormat('he-IL',{style:'currency',currency:'ILS'}).format(Number(n)||0)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function current(b,m,y){let start=Number(b.month),len=Number(b.frequency),end=start+len-1;return (Number(b.year)===y&&m>=start&&m<=Math.min(11,end))||(Number(b.year)+1===y&&end>=12&&m<=end-12)}
+function save(){localStorage.setItem('homebills-v1',JSON.stringify(bills));render()}
+function render(){let m=Number($('month').value),y=Number($('year').value),list=bills.filter(b=>current(b,m,y));$('periodTitle').textContent='חשבונות עבור '+months[m]+' '+y;$('count').textContent=list.length+' חשבונות';let total=list.reduce((s,b)=>s+Number(b.amount),0),paid=list.filter(b=>b.status==='paid').reduce((s,b)=>s+Number(b.amount),0);$('total').textContent=money(total);$('paid').textContent=money(paid);$('unpaid').textContent=money(total-paid);
+$('bills').innerHTML=list.length?list.map(b=>{let late=b.status!=='paid'&&b.due&&new Date(b.due+'T23:59:59')<new Date();return '<article class="bill"><div class="billtop"><div><h3>'+esc(b.kind)+'</h3><div class="muted">'+esc(b.provider||'ללא ספק')+' · '+months[b.month]+' '+b.year+(b.frequency==2?' · דו־חודשי':' · חודשי')+'</div></div><span class="tag '+(late?'late':b.status==='paid'?'':'unpaid')+'">'+(late?'באיחור':b.status==='paid'?'שולם':'ממתין')+'</span></div><div class="amount">'+money(b.amount)+'</div><div class="muted">תאריך יעד: '+esc(b.due||'לא צוין')+'</div>'+(b.notes?'<div class="muted">'+esc(b.notes)+'</div>':'')+'<div class="actions"><button class="soft" onclick="togglePaid(\\''+b.id+'\\')">'+(b.status==='paid'?'סמן כממתין':'סמן כשולם')+'</button><button class="soft" onclick="editBill(\\''+b.id+'\\')">עריכה</button><button class="soft" onclick="deleteBill(\\''+b.id+'\\')">מחיקה</button></div></article>'}).join(''):'<div class="panel empty">אין חשבונות לתקופה הזו.<br>לחץ על ״הוספת חודש״ כדי להוסיף חשבון ראשון.</div>'}
+$('month').onchange=render;$('year').onchange=render;
+$('add').onclick=()=>{$('form').reset();$('editId').value='';$('formTitle').textContent='הוספת חודש';$('billMonth').value=$('month').value;$('billYear').value=$('year').value;$('due').value=new Date().toISOString().slice(0,10);$('dlg').showModal()};
+$('cancel').onclick=()=>$('dlg').close();
+$('form').onsubmit=e=>{e.preventDefault();let id=$('editId').value,item={id:id||String(Date.now()),month:Number($('billMonth').value),year:Number($('billYear').value),kind:$('kind').value,frequency:Number($('frequency').value),provider:$('provider').value.trim(),amount:Number($('amount').value),due:$('due').value,status:$('status').value,notes:$('notes').value.trim()};if(id)bills=bills.map(b=>b.id===id?item:b);else bills.push(item);$('dlg').close();save()};
+window.togglePaid=id=>{let b=bills.find(x=>x.id===id);if(b){b.status=b.status==='paid'?'unpaid':'paid';save()}};
+window.editBill=id=>{let b=bills.find(x=>x.id===id);if(!b)return;$('editId').value=id;$('formTitle').textContent='עריכת חשבון';$('billMonth').value=b.month;$('billYear').value=b.year;for(let k of ['kind','frequency','provider','amount','due','status','notes'])$(k).value=b[k];$('dlg').showModal()};
+window.deleteBill=id=>{if(confirm('למחוק את החשבון?')){bills=bills.filter(b=>b.id!==id);save()}};render();
+</script></body></html>
